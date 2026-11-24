@@ -6,7 +6,7 @@ Proiect individual la disciplina Metode avansate de programare, anul universitar
 
 - **Nume:** Dieaconu Rebeca
 - **Grupa:** 1.1
-- **Marca:** ....
+- **Marca:** LH715680
 - **Tema:** 3 - Catalog de note
 
 ## Descriere
