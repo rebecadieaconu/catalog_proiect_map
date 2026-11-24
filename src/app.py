@@ -38,7 +38,28 @@ class Store:
             if student["id"] == student_id:
                 return student
         return None
+    def list_students(self, group: str | None = None) -> list[dict]:
+        """Returnează studenții sortati alfabetic după nume, opțional filtrați după grupă."""
+        items = self.students
+        if group is not None and group.strip() != "":
+            target_group = group.strip()
+            items = [s for s in items if str(s.get("group", "")).strip() == target_group]
+        return sorted(items, key=lambda s: (str(s.get("name", "")).lower(), s.get("id", 0)))
 
+    def get_summary_stats(self) -> dict:
+        """Returnează statistici generale despre catalog."""
+        total_students = len(self.students)
+        total_grades = len(self.grades)
+        if total_grades == 0:
+            overall_average = None
+        else:
+            total = sum(g["grade"] for g in self.grades)
+            overall_average = round_half_up_2(Decimal(total) / Decimal(total_grades))
+        return {
+            "students_count": total_students,
+            "grades_count": total_grades,
+            "overall_average": overall_average,
+        }
 
 store = Store()
 
@@ -118,10 +139,9 @@ def create_student():
 
 
 @app.get("/students")
-def list_students():
-    ordered = sorted(store.students, key=lambda s: s["name"])
-    return jsonify(ordered), 200  # ordonare dupa name[cite: 9, 15]
-
+def get_students():
+    group = request.args.get("group")
+    return jsonify(store.list_students(group=group)), 200  # filtrare optionala dupa grupa + ordonare dupa nume
 
 @app.post("/grades")
 def add_grade():
