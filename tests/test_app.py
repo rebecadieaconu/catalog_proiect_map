@@ -163,3 +163,33 @@ def test_subject_report_empty_and_populated(client):
         "max": 9,
         "count": 2,
     }
+def test_list_students_filter_by_group(client):
+    client.post("/reset")
+    client.post("/students", json={"name": "Popescu Ana", "group": "1.1"})
+    client.post("/students", json={"name": "Albu Maria", "group": "1.2"})
+    client.post("/students", json={"name": "Ionescu Dan", "group": "1.1"})
+
+    resp = client.get("/students?group=1.1")
+    assert resp.status_code == 200
+    names = [s["name"] for s in resp.get_json()]
+    assert names == ["Ionescu Dan", "Popescu Ana"]
+
+
+def test_store_summary_stats(client):
+    client.post("/reset")
+    assert store.get_summary_stats() == {
+        "students_count": 0,
+        "grades_count": 0,
+        "overall_average": None,
+    }
+
+    st = client.post("/students", json={"name": "Elev Test", "group": "1.1"}).get_json()
+    client.post("/grades", json={"student_id": st["id"], "subject": "MAP", "grade": 8})
+    client.post("/grades", json={"student_id": st["id"], "subject": "POO", "grade": 9})
+
+    assert store.get_summary_stats() == {
+        "students_count": 1,
+        "grades_count": 2,
+        "overall_average": 8.5,
+    }
+    
